@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía para Beppu y Lima</title>
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDDECVmdGl4G-HMzenv_ajH_IFwyU8Yfjs&libraries=places&callback=initMap"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #d63384, #6d28d9);
+            color: white;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            font-size: 24px;
+            border-bottom: 2px solid white;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        section {
+            background: white;
+            color: black;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            color: #6d28d9;
+            font-size: 25px;
+        }
+
+        #extra {
+            width: 645px;
+            margin: auto;
+        }
+
+        button {
+            background: #d63384;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #b62c6c;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        input {
+            width: 92%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        #map {
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+        }
+
+        .full-width {
+            grid-column: span 2;
+        }
+
+        img {
+            width: 100%;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        .direccion {
+            background: linear-gradient(135deg, #8a2be2, #ff69b4);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            box-shadow: 4px 4px 15px rgba(0, 0, 0, 0.2);
+            display: inline-block;
+            margin: 20px auto;
+        }
+
+        .direccion-container {
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .full-width {
+                grid-column: span 1;
+            }
+
+            #extra {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Guía para Beppu y Lima</h1>
+    </header>
+
+    <div class="container">
+        <section id="weather">
+            <h2>Clima en Lima y Beppu</h2>
+            <p>🌤️ Lima, Perú: <span id="weather-peru">Cargando...</span></p>
+            <p>🌋 Beppu, Japón: <span id="weather-japan">Cargando...</span></p>
+            <img src="https://live.staticflickr.com/65535/52462061571_4b02645c18_b.jpg" alt="Clima en Lima y Beppu">
+        </section>
+
+        <section id="time">
+            <h2>Hora en Lima y Beppu</h2>
+            <p>🕒 Lima: <span id="time-peru"></span></p>
+            <p>🕰️ Beppu: <span id="time-japan"></span></p>
+            <img src="https://cdn-icons-png.flaticon.com/512/283/283327.png" alt="Hora en Lima y Beppu">
+        </section>
+
+        <section id="map-section" class="full-width">
+            <h2>Mapa de Beppu y Lima</h2>
+            <div id="map"></div>
+            <div class="direccion-container">
+                <p class="direccion">
+                    <strong>Dirección:</strong> 25 Furuichimachi, Beppu, Oita 874-0011, Japón
+                </p>
+            </div>
+        </section>
+
+        <section id="flight">
+            <h2>Calculadora de Vuelo</h2>
+            <button onclick="calculateFlight()">Calcular Duración del Vuelo</button>
+            <p id="flight-info">Duración: -</p>
+            <img src="https://cdn.aarp.net/content/dam/aarp/travel/travel_tips/2021/08/1140-airplane-in-the-sky-esp.jpg"
+                alt="Duración de vuelo">
+        </section>
+
+        <section>
+            <h2>Conversor de Yen a Sol Peruano</h2>
+            <input type="number" id="cantidad" placeholder="Ingrese cantidad" value="1">
+            <select id="moneda">
+                <option value="JPY">Yen Japonés (JPY)</option>
+                <option value="PEN">Sol Peruano (PEN)</option>
+            </select>
+            <button onclick="convertir()">Convertir</button>
+            <p id="resultado">Resultado: -</p>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_cFjlatUw2KGu7_ZuNbi4Bt29-rzAXyZeUw&s"
+                alt="Conversión de moneda">
+        </section>
+
+        <section id="extra">
+            <h2>Datos Curiosos de Beppu</h2>
+            <p id="curiosidades">Cargando...</p>
+            <img id="curiosidad-img" alt="Datos curiosos de Beppu" width="400">
+        </section>
+    </div>
+
+    <script>
+        function updateTime() {
+            const options = {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false // Formato de 24 horas
+            };
+
+            document.getElementById("time-peru").innerText = new Date().toLocaleString("es-PE", {
+                ...options,
+                timeZone: "America/Lima"
+            });
+
+            document.getElementById("time-japan").innerText = new Date().toLocaleString("es-PE", {
+                ...options,
+                timeZone: "Asia/Tokyo"
+            });
+        }
+
+        async function getWeather(city, country, elementId) {
+            const apiKey = '7b97325a41b1f7863b16fd9dc5299a3b';
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city},${country}&units=metric&appid=${apiKey}&lang=es`;
+
+            try {
+                let response = await fetch(url);
+                let data = await response.json();
+                let temperature = data.main.temp;
+                let description = data.weather[0].description;
+                document.getElementById(elementId).innerText = `${temperature}°C - ${description}`;
+            } catch (error) {
+                document.getElementById(elementId).innerText = "No disponible.";
+            }
+        }
+
+        function initMap() {
+            let map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 2,
+                center: { lat: 10, lng: -90 },
+            });
+
+            new google.maps.Marker({ position: { lat: 33.2846, lng: 131.4916 }, map: map, title: "Beppu, Japón" });
+            new google.maps.Marker({ position: { lat: -12.0464, lng: -77.0428 }, map: map, title: "Lima, Perú" });
+        }
+
+        function convertir() {
+            let cantidad = document.getElementById("cantidad").value;
+            let moneda = document.getElementById("moneda").value;
+            let access_key = 'e35b3ee21b7988c91c4cf9af06500e03';
+            let endpoint = 'latest';
+
+            $.ajax({
+                url: `https://api.exchangeratesapi.io/v1/${endpoint}?access_key=${access_key}`,
+                dataType: 'jsonp',
+                success: function (json) {
+                    let tasaCambio = moneda === "JPY" ? json.rates.PEN / json.rates.JPY : json.rates.JPY / json.rates.PEN;
+                    let resultado = cantidad * tasaCambio;
+                    document.getElementById("resultado").innerText = `Resultado: ${resultado.toFixed(2)} ${moneda === "JPY" ? "PEN" : "JPY"}`;
+                },
+                error: function () {
+                    document.getElementById("resultado").innerText = "Error al obtener la conversión";
+                }
+            });
+        }
+
+        async function getCuriosidadesBeppu() {
+            const curiosidades = [
+                {
+                    texto: "Beppu es la ciudad con más aguas termales en Japón y la segunda en el mundo después de Yellowstone, EE. UU.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbZcnDmwHBNMTdcSNnAy1Q7L3Jsf5hoGMwZg&s"
+                },
+                {
+                    texto: "Existen más de 2,300 fuentes termales en Beppu.",
+                    imagen: "https://efeagro.com/wp-content/uploads/2022/06/53382_1-e1537524935120.jpg"
+                },
+                {
+                    texto: "Los Infiernos de Beppu son 7 aguas termales con colores y temperaturas extremas, algunas alcanzan hasta 98°C.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSt5OR4iiQPrCrWSnwU_TlGwrZoNKAuQcro1A&s"
+                },
+                {
+                    texto: "En Beppu puedes experimentar un baño de arena volcánica caliente, en el que te entierran en arena termal para relajar el cuerpo.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_UlI4aqCSLMZutZZiyULYNxybiXGk6Aeovg&s"
+                },
+                {
+                    texto: "La ciudad emite más de 130,000 toneladas de vapor al día desde sus termas.",
+                    imagen: "https://previews.123rf.com/images/sepavo/sepavo1601/sepavo160100035/50257122-beppu-jap%C3%B3n-del-paisaje-urbano-con-las-casas-de-ba%C3%B1o-de-aguas-termales-con-vapor-de-levantamiento.jpg"
+                },
+                {
+                    texto: "En el Takaragawa Onsen, un onsen histórico, puedes disfrutar de baños de arena caliente y termales.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMFlEJyreHOzf1M9OkMVrapHtjRyPFp_ASJA&s"
+                },
+                {
+                    texto: "El Infierno Umi Jigoku tiene aguas termales de color azul cobalto debido al sulfato de hierro.",
+                    imagen: "https://res.cloudinary.com/jnto/image/upload/w_750,h_503,fl_lossy,f_auto/v1666782975/oita/Oita_t_id255_3"
+                },
+                {
+                    texto: "El Oniishibozu Jigoku recibe su nombre por las burbujas de lodo hirviendo que parecen cabezas de monjes.",
+                    imagen: "https://previews.123rf.com/images/phurinee/phurinee1604/phurinee160400416/57693676-oniishibozu-jigoku-en-beppu-oita-jap%C3%B3n.jpg"
+                },
+                {
+                    texto: "En Beppu se pueden cocinar alimentos en vapores termales mediante el método \"Jigoku Mushi\" (cocción infernal).",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSzrnWrVXXG-pqCeZ4Zdhm1O_qGpY2DYbNfSw&s"
+                },
+                {
+                    texto: "Hay un zoológico en Beppu, Takasakiyama Natural Zoological Garden, con más de 1,500 monos salvajes.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTk45IR9Na2cfrbhCkdq053f_xVcAhowlRFDg&s"
+                },
+                {
+                    texto: "En Beppu puedes encontrar helado cocido al vapor geotérmico.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzcM73uXbHgSjgxkKJEpos1sBGaPOlkdSu0A&s"
+                },
+                {
+                    texto: "El Kamado Jigoku tiene varias piscinas termales de distintos colores, como roja, azul y blanca.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSYiYUbSvDGLipDC496UHqpRnBAPgyz1Z2N2w&s"
+                },
+                {
+                    texto: "Se celebra el Beppu Fire Festival, donde se recrean rituales de purificación con fuego.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTkhAB8zSbDOVVUmLH5lyr6ERi4KI_8GEd1Cw&s"
+                },
+                {
+                    texto: "El Chinoike Jigoku es una fuente termal roja con arcilla rica en hierro, la más antigua de Beppu.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSSsh4IMW-qcc3mtgRruTOIoYGouYBhX0r5A&s"
+                },
+                {
+                    texto: "Hay hoteles y ryokan donde los huéspedes pueden dormir en habitaciones con su propio onsen privado.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRXrBnM0e2gRhwO2bnoxGwpyLmj2VkZAUZcBA&s"
+                },
+                {
+                    texto: "La ciudad ofrece baños termales para pies de uso gratuito en varios puntos.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSU7_O8PMX8BRx_X7JrMirlMkt_Flgdb6nzXA&s"
+                },
+                {
+                    texto: "Hay un parque de atracciones temático llamado \"Beppu Rakutenchi\", con una montaña rusa sobre agua.",
+                    imagen: "https://res.klook.com/images/fl_lossy.progressive,q_65/c_fill,w_1295,h_863/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/p90akbwvptw976mqbmz4/BeppuRakutenchiAdmissionTicketwithCableCarRound-tripTicketinOita.jpg"
+                },
+                {
+                    texto: "Beppu es famosa por su sake local, que se fermenta con agua termal.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR87WfdUZiEu3AiM2zhj_CCigMtLofciTw-MQ&s"
+                },
+                {
+                    texto: "Los capibaras son animales populares en algunos onsen de la región, ya que disfrutan sumergiéndose en aguas termales",
+                    imagen: "https://res.cloudinary.com/jnto/image/upload/w_800,h_534,c_fill,f_auto,fl_lossy,q_60/v1/media/filer_public/65/42/65421032-bdfa-4e88-bd8e-e0e8c773bb23/capybara-yuzu_yg8k5h"
+                },
+                {
+                    texto: "El Zoológico African Safari, cerca de Beppu, permite ver animales como leones, capibaras y elefantes en un recorrido estilo safari.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRxGJyCd04--rf24wbgemzmgdH645cTF54lyw&s"
+                },
+                {
+                    texto: "El puente Kokonoe Yume, a una hora de Beppu, es el puente colgante peatonal más alto de Japón, con vistas espectaculares.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSmQtDc47s8wkKrhm4duFUp8fYIrH52iU1urQ&s"
+                },
+                {
+                    texto: "El Bungy Japan en Itoshima, a unas horas de Beppu, es un lugar popular para hacer bungee jumping desde un puente sobre un río.",
+                    imagen: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0a/b9/67/ea/itsuki-bungy.jpg?w=1200&h=1200&s=1"
+                },
+                {
+                    texto: "Los cerezos florecen en primavera en el Parque Beppu y el Monte Tsurumi, atrayendo a visitantes para el hanami.",
+                    imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRoKSupVfYutr3tpRXIt_CvnDHtH9pmgr3Vww&s"
+                }
+            ];
+
+            const randomCuriosidad = curiosidades[Math.floor(Math.random() * curiosidades.length)];
+            // Actualizar contenido en la página
+            document.getElementById("curiosidades").innerText = randomCuriosidad.texto;
+            document.getElementById("curiosidad-img").src = randomCuriosidad.imagen;
+            document.getElementById("curiosidad-img").alt = randomCuriosidad.texto;
+        }
+
+        function calculateFlight() {
+            document.getElementById("flight-info").innerText = "Duración: 24h, Escalas en: Tokio, Los Ángeles, Lima";
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            getWeather("La Molina", "PE", "weather-peru");
+            getWeather("Beppu", "JP", "weather-japan");
+            updateTime();
+            setInterval(updateTime, 60000);
+            getCuriosidadesBeppu(); // Agregar esta línea
+        });
+    </script>
+</body>
+
+</html>
